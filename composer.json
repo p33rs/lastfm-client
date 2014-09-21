@@ -10,17 +10,14 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "doctrine/mongodb-odm": "dev-master"
+        "php": ">=5.4.0"
     },
     "config" : {
         "component-dir": "vendor"
     },
     "autoload": {
         "psr-4": {
-            "p33rs\\LastFM\\Client\\": "src/",
-            "p33rs\\Doctrine\\Hydrators\\": "doctrine/cache/hydrators",
-            "p33rs\\Doctrine\\Proxies\\": "doctrine/cache/proxies"
+            "p33rs\\LastFM\\Client\\": "src/"
         }
     }
 }
