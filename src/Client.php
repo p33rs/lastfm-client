@@ -1,6 +1,5 @@
 <?php
 namespace p33rs\LastFM\Client;
-use p33rs\LastFM\Client\Storage\Doctrine\Adapter as Cache;
 /**
  * LastFM Client with caching.
  */
@@ -30,7 +29,8 @@ class Client
     public function __construct()
     {
 
-        $this->cache = new Cache();
+        $cacheClass = __NAMESPACE__ . '\\Storage\\' . Config::get('storageAdapter');
+        $this->cache = new $cacheClass();
         // establish the curl connection
         $this->ch = curl_init();
         curl_setopt_array($this->ch, [
@@ -59,7 +59,10 @@ class Client
         $cached = $this->cache->retrieve($hash);
         $parsed = null;
         if ($cached) {
+            echo 'cached result';
             $parsed = simplexml_load_string($cached);
+        } else {
+            echo 'new result';
         }
         if (($cached && !$parsed) || !$cached) {
             $response = $this->request($object, $method, $args);
@@ -141,7 +144,7 @@ class Client
      */
     private function buildHash($object, $method, array $args = []) {
         return md5(
-            $object . self::HS . $method . self::HS . md5(json_encode($args))
+            $object . self::HS . $method . self::HS . md5(json_encode($args)), true
         );
     }
 
