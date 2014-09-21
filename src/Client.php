@@ -12,8 +12,10 @@ class Client
     private $cache;
     /** @var int rate limiting */
     private $lastCall = 0;
-    /** @var string auth token */
-    private $authToken = null;
+    /**
+     * @var string auth session. required to make authenticated calls.
+     */
+    private $authSession = null;
 
     /** @var HS separator for hash keys */
     const HS = '##';
@@ -68,26 +70,6 @@ class Client
     }
 
     /**
-     * Set an authentication session.
-     * This is assuming you've gotten an auth token already.
-     * Getting such a token and managing its session lifetime
-     *   is left as an exercise for the user.
-     * @param string $token
-     * @return this
-     */
-    public function auth($token) {
-
-    }
-
-    /**
-     * @return this
-     */
-    public function unAuth() {
-        $this->authToken = null;
-        return this;
-    }
-
-    /**
      * Rate limiting.
      * @throws \Exception
      */
@@ -104,15 +86,16 @@ class Client
      * @param $object
      * @param $method
      * @param array $args
+     * @param bool $forceApiSig create api sig even if not authenticated
      * @return string
      * @throws Exception
      */
-    private function request($object, $method, array $args = [])
+    private function request($object, $method, array $args = [], $forceApiSig = false)
     {
         curl_setopt(
             $this->ch,
             CURLOPT_URL,
-            $this->buildUrl($object, $method, $args)
+            $this->buildUrl($object, $method, $args, $forceApiSig)
         );
         $xml = curl_exec($this->ch);
         // update rate limiter
@@ -127,14 +110,21 @@ class Client
      * @param $object
      * @param $method
      * @param array $args
+     * @param bool $forceApiSig create api sig even if not authenticated
      * @return string
      * @throws \Exception
      */
-    private function buildUrl($object, $method, array $args = []) {
+    private function buildUrl($object, $method, array $args = [], $forceApiSig = false) {
         $args += [
             'method' => $object.'.'.$method,
             'api_key' => Config::get(self::CFG_KEY),
         ];
+        if ($this->authSession) {
+            $args['sk'] = $this->authSession;
+            $args['api_sig'] = $this->generateApiSig($args);
+        } elseif ($forceApiSig) {
+            $args['api_sig'] = $this->generateApiSig($args);
+        }
         return Config::get(self::CFG_URL) . '?' . http_build_query($args);
     }
 
@@ -150,13 +140,65 @@ class Client
         );
     }
 
-    private function authParams() {
-        if (!$this->authToken) {
-            return [];
+    /**
+     * generate the api_sig param, required after auth
+     * @param array $args
+     * @return string
+     */
+    private function generateApiSig(array $args) {
+        ksort($args);
+        $sig = '';
+        foreach($args as $key => $value) {
+            $sig .= $key.$value;
         }
-        return [
-            'sk' => ''
-        ];
+        return $sig;
+    }
+
+    /**
+     * Generate a session key, which will begin an authenticated session.
+     * If you've already generated a key, you may set it directly.
+     * @see Client::setAuthSession()
+     * @see Client::authSession
+     * @param $token
+     * @throws Exception
+     * @return string
+     */
+    public function generateSessionKey($token) {
+        $this->wait();
+        $object = 'auth';
+        $method = 'getSession';
+        $args = ['token' => $token];
+        $response = $this->request($object, $method, $args, true);
+        if (!$parsed = simplexml_load_string($response)) {
+            throw new Exception('corrupt data returned');
+        }
+        if ($parsed['status'] !== 'ok') {
+            throw new Exception('invalid token');
+        }
+        $key = $parsed->session->key;
+        if (!$key || !is_string($key)) {
+            throw new Exception('invalid key retrieved');
+        }
+        $this->authSession = $key;
+        return $this->authSession;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAuthenticated()
+    {
+        return !!$this->authSession;
+    }
+
+    /**
+     * @param string $authSession
+     * @return this
+     */
+    public function setAuthSession($authSession)
+    {
+        $this->authSession = $authSession;
+        return $this;
     }
 
 } // end class

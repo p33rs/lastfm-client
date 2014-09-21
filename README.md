@@ -19,6 +19,30 @@ Requires Mongo, Composer. In the future, may add support for more cache storage.
     }
 ```
 
+## Authentication:
+First of all, the official auth docs are here: http://www.last.fm/api/webauth
+You are responsible for creating a callback url and securely storing your users' session keys.
+On your callback url, you can use this client to create a session key. The code will look like this:
+```
+$username = 'ted';
+$token = $_POST['token'];
+$client = new Client();
+$sessionKey = $client->generateSessionKey($token);
+$database->save([ // some generic database
+    'username' => $username,
+    'session' => $sessionKey,
+]);
+```
+Once the user logs in to your app, you may reload the session key.
+```
+$savedUser = $database->load(['username' => $username]);
+if ($savedUser) {
+    $client->setAuthSession($savedUser->session);
+} else {
+    // redirect the user to http://www.last.fm/api/auth/?api_key=xxx
+}
+```
+If a response ever comes back with an invalid session key error, clear the session key from your database.
+
 ## Todo:
-- AUTHENTICATION, YO.
 - More storage adapters and a method of choosing which to use.
