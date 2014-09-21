@@ -1,6 +1,9 @@
 # About:
-
 This is a LastFM client with a built-in cache and rate limiter.
+
+## Setup:
+Requires Mongo, Composer. In the future, may add support for more cache storage.
+`composer install` and set up database parameters in `config.local.php`, using `config.local.php.example` as a template.
 
 ## Usage:
 ```
@@ -17,6 +20,5 @@ This is a LastFM client with a built-in cache and rate limiter.
 ```
 
 ## Todo:
-
 - AUTHENTICATION, YO.
 - More storage adapters and a method of choosing which to use.
