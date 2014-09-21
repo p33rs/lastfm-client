@@ -17,6 +17,10 @@
         "component-dir": "vendor"
     },
     "autoload": {
-        "psr-4": { "p33rs\\LastFM\\Client\\": "src/" }
+        "psr-4": {
+            "p33rs\\LastFM\\Client\\": "src/",
+            "p33rs\\Doctrine\\Hydrators\\": "doctrine/cache/hydrators",
+            "p33rs\\Doctrine\\Proxies\\": "doctrine/cache/proxies"
+        }
     }
 }

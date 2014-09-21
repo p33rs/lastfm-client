@@ -2,7 +2,7 @@
 namespace p33rs\LastFM\Client\Storage\Doctrine\Document;
 use \Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
-/** @ODM\Document */
+/** @ODM\Document(collection="cached_call") */
 class CachedCall {
 
     /**

@@ -4,6 +4,7 @@ This is a LastFM client with a built-in cache and rate limiter.
 ## Setup:
 Requires Mongo, Composer. In the future, may add support for more cache storage.
 `composer install` and set up database parameters in `config.local.php`, using `config.local.php.example` as a template.
+The `doctrine` directory must be writable.
 
 ## Usage:
 ```
@@ -46,4 +47,4 @@ If a response ever comes back with an invalid session key error, clear the sessi
 
 ## Todo:
 - More storage adapters and a method of choosing which to use.
-- For some reason, the MongoClient connection doesn't seem to be working.
+- The storage adapter isn't working reliably. It's a problem with the way I'm configuring it. Help!

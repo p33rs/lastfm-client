@@ -13,8 +13,9 @@ class Adapter implements CacheInterface {
 
     const CFG_DOCTRINE_CACHE = 'doctrineCache';
     const CFG_DOCTRINE_DB = 'doctrineDb';
-    const DOCUMENT_PATH = '/Doctrine/Documents';
+    const DOCUMENT_PATH = '/Document';
     const DOCUMENT_NAME_CACHED_CALL = 'CachedCall';
+    const NS_PREFIX = 'p33rs\\Doctrine';
 
     /** @var DocumentManager */
     private $dm;
@@ -24,19 +25,30 @@ class Adapter implements CacheInterface {
 
     public function __construct() {
 
+        AnnotationDriver::registerAnnotationClasses();
         $this->documentNS = __NAMESPACE__ . '\\Document\\';
 
-        $config = new DoctrineConfig();
-        $config->setProxyDir(Config::get(self::CFG_DOCTRINE_CACHE));
-        $config->setProxyNamespace('Proxies');
-        $config->setHydratorDir(Config::get(self::CFG_DOCTRINE_CACHE));
-        $config->setHydratorNamespace('Hydrators');
-        $config->setMetadataDriverImpl(
-            $config->newDefaultAnnotationDriver([__DIR__ . self::DOCUMENT_PATH])
-        );
-        $config->setDefaultDB(Config::get(self::CFG_DOCTRINE_DB));
-        AnnotationDriver::registerAnnotationClasses();
+        $config = $this->getConfig();
+        $connection = new Connection($this->getUrl(), [], $config);
 
+        $this->dm = DocumentManager::create($connection, $config);
+
+    }
+
+    private function getConfig() {
+        $config = new DoctrineConfig();
+        $config->setDefaultDB(Config::get(self::CFG_DOCTRINE_DB));
+        $config->setProxyDir(Config::get(self::CFG_DOCTRINE_CACHE) . '/hydrators');
+        $config->setProxyNamespace(self::NS_PREFIX . '\\Proxies');
+        $config->setHydratorDir(Config::get(self::CFG_DOCTRINE_CACHE) . '/proxies');
+        $config->setHydratorNamespace(self::NS_PREFIX . '\\Hydrators');
+        $config->setMetadataDriverImpl(
+            AnnotationDriver::create(__DIR__ . '/Document')
+        );
+        return $config;
+    }
+
+    private function getUrl() {
         $user = Config::get(self::CFG_STORAGE_USER);
         $pass = Config::get(self::CFG_STORAGE_PASS);
         $name = Config::get(self::CFG_STORAGE_NAME);
@@ -53,11 +65,7 @@ class Adapter implements CacheInterface {
         if ($name) {
             $host .= '/' . $name;
         }
-        $connection = new Connection(new \MongoClient($host));
-        $connection->connect();
-
-        $this->dm = DocumentManager::create($connection, $config);
-
+        return $host;
     }
 
 
