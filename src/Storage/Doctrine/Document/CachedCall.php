@@ -1,5 +1,5 @@
 <?php
-namespace p33rs\LastFM\Client\Document;
+namespace p33rs\LastFM\Client\Storage\Doctrine\Document;
 use \Doctrine\ODM\MongoDB\Mapping\Annotations as ODM;
 
 /** @ODM\Document */
@@ -26,8 +26,8 @@ class CachedCall {
      */
     private $args;
     /**
-     * @ODM\Hash
-     * @var array
+     * @ODM\string
+     * @var string
      */
     private $result;
     /**
@@ -101,7 +101,7 @@ class CachedCall {
     }
 
     /**
-     * @return array
+     * @return string
      */
     public function getResult()
     {
@@ -109,10 +109,10 @@ class CachedCall {
     }
 
     /**
-     * @param array $result
+     * @param string $result
      * @return this
      */
-    public function setResult(Array $result)
+    public function setResult($result)
     {
         $this->result = $result;
         return $this;

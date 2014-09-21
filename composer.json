@@ -17,6 +17,6 @@
         "component-dir": "vendor"
     },
     "autoload": {
-        "psr-4": { "p33rs\\LastFM\\Client": "src/" }
+        "psr-4": { "p33rs\\LastFM\\Client\\": "src/" }
     }
 }

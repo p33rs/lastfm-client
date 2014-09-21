@@ -5,6 +5,7 @@ return [
     'storageUrl' => 'localhost',
     'storageUser' => '',
     'storagePass' => '',
+    'storagePort' => 27017,
     'storageName' => 'lastfm',
     'url' => 'http://ws.audioscrobbler.com/2.0/',
     'rate' => 800000 // .8 sec, in usec

@@ -1,6 +1,7 @@
 <?php
 return [
     'key' => '00000000000000000000000000000000',
+    'storagePort' => 27017,
     'storageUrl' => 'localhost',
     'storageUser' => 'db_user',
     'storagePass' => 'db_pass',

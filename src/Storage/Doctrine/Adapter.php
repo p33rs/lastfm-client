@@ -6,18 +6,20 @@ use \Doctrine\ODM\MongoDB\Configuration as DoctrineConfig;
 use \Doctrine\ODM\MongoDB\DocumentManager;
 use \Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver;
 use p33rs\LastFM\Client\Config;
-use p33rs\LastFM\Client\Document\CachedCall;
+use p33rs\LastFM\Client\Storage\Doctrine\Document\CachedCall;
 use p33rs\LastFM\Client\Storage\CacheInterface;
 
 class Adapter implements CacheInterface {
 
     const CFG_DOCTRINE_CACHE = 'doctrineCache';
     const DOCUMENT_PATH = '/Doctrine/Documents';
+    const DOCUMENT_NAME_CACHED_CALL = 'CachedCall';
 
-    /**
-     * @var DocumentManager
-     */
+    /** @var DocumentManager */
     private $dm;
+
+    /** @var string */
+    private $documentNS;
 
     public function __construct() {
 
@@ -34,33 +36,64 @@ class Adapter implements CacheInterface {
         $config->setDefaultDB('doctrine_odm');
         AnnotationDriver::registerAnnotationClasses();
 
-        $this->dm = DocumentManager::create(new Connection(), $config);
+        $user = Config::get(self::CFG_STORAGE_USER);
+        $pass = Config::get(self::CFG_STORAGE_PASS);
+        $name = Config::get(self::CFG_STORAGE_NAME);
+        $port = Config::get(self::CFG_STORAGE_PORT);
+        $url = Config::get(self::CFG_STORAGE_URL);
+        $host = 'mongodb://';
+        if ($user && $pass) {
+            $host .= $user . ':' . $pass . '@';
+        }
+        $host .= $url . ':' . $port;
+        if ($name) {
+            $host .= '/' . $name;
+        }
+
+        $this->dm = DocumentManager::create(new Connection($host), $config);
 
     }
 
+
     /**
-     * @param CachedCall $cachedCall
-     * @return this|void
+     * @param $hash
+     * @param $object
+     * @param $method
+     * @param $args
+     * @param $result
+     * @return this
      */
-    public function save($cachedCall) {
-        // save the cached call
-        // run cleanup
+    public function save($hash, $object, $method, $args, $result) {
+        $this->cleanup($hash);
+        $cachedCallName = $this->documentNS . self::DOCUMENT_NAME_CACHED_CALL;
+        $cachedCall = new $cachedCallName();
+        $cachedCall
+            ->setObject($object)
+            ->setMethod($method)
+            ->setArgs($args)
+            ->setResult($result)
+            ->setHash($hash);
+        $this->dm->persist($cachedCall);
+        $this->dm->flush();
+        return $this;
     }
 
     /**
      * @param $requestHash
-     * @return CachedCall|void
+     * @return CachedCall
      */
     public function retrieve($requestHash) {
         return $this->dm
-            ->getRepository($this->DOCUMENT_NS . 'CachedCall')
+            ->getRepository($this->documentNS . 'CachedCall')
             ->findOneBy(['hash' => $requestHash]);
     }
 
     private function cleanup($requestHash) {
-        return $this->dm
-            ->getRepository($this->DOCUMENT_NS . 'CachedCall')
-            ->findOneBy(['hash' => $requestHash]);
+        $this->dm
+            ->getDocumentCollection($this->documentNS . 'CachedCall')
+            ->remove(['hash' => $requestHash]);
+        $this->dm->flush();
+        return $this;
     }
 
 }

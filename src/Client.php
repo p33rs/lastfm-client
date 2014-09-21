@@ -1,5 +1,6 @@
 <?php
 namespace p33rs\LastFM\Client;
+use p33rs\LastFM\Client\Storage\Doctrine\Adapter as Cache;
 /**
  * LastFM Client with caching.
  */
@@ -29,6 +30,7 @@ class Client
     public function __construct()
     {
 
+        $this->cache = new Cache();
         // establish the curl connection
         $this->ch = curl_init();
         curl_setopt_array($this->ch, [
@@ -55,16 +57,19 @@ class Client
         // first, is there a cached answer?
         $hash = $this->buildHash($object, $method, $args);
         $cached = $this->cache->retrieve($hash);
+        $parsed = null;
         if ($cached) {
-            return $cached->getResult();
+            $parsed = simplexml_load_string($cached);
         }
-        // We gotta make a call, so ...
-        $response = $this->request($object, $method, $args);
-        if (!$parsed = simplexml_load_string($response)) {
-            throw new Exception('corrupt data returned');
+        if (($cached && !$parsed) || !$cached) {
+            $response = $this->request($object, $method, $args);
+            $parsed = simplexml_load_string($response);
+            if ($parsed) {
+                $this->cache->save($hash, $object, $method, $args, $response);
+            }
         }
-        if ($parsed['status'] === 'ok') {
-            $this->cache->save($hash, $object, $method, $args, $response);
+        if (!$parsed) {
+            throw new Exception('invalid response received');
         }
         return $parsed;
     }
