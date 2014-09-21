@@ -2,8 +2,10 @@
 return [
     'key' => '00000000000000000000000000000000',
     'storagePort' => 27017,
-    'storageUrl' => 'localhost',
+    'storageUrl' => '127.0.0.1',
     'storageUser' => 'db_user',
     'storagePass' => 'db_pass',
     'storageName' => 'db_name',
+    'doctrineDb' => 'doctrine_odm',
+    'doctrineCache' => __DIR__ . '/doctrine/cache',
 ];

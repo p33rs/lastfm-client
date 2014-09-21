@@ -12,6 +12,7 @@ use p33rs\LastFM\Client\Storage\CacheInterface;
 class Adapter implements CacheInterface {
 
     const CFG_DOCTRINE_CACHE = 'doctrineCache';
+    const CFG_DOCTRINE_DB = 'doctrineDb';
     const DOCUMENT_PATH = '/Doctrine/Documents';
     const DOCUMENT_NAME_CACHED_CALL = 'CachedCall';
 
@@ -33,7 +34,7 @@ class Adapter implements CacheInterface {
         $config->setMetadataDriverImpl(
             $config->newDefaultAnnotationDriver([__DIR__ . self::DOCUMENT_PATH])
         );
-        $config->setDefaultDB('doctrine_odm');
+        $config->setDefaultDB(Config::get(self::CFG_DOCTRINE_DB));
         AnnotationDriver::registerAnnotationClasses();
 
         $user = Config::get(self::CFG_STORAGE_USER);
@@ -45,12 +46,17 @@ class Adapter implements CacheInterface {
         if ($user && $pass) {
             $host .= $user . ':' . $pass . '@';
         }
-        $host .= $url . ':' . $port;
+        $host .= $url;
+        if ($port) {
+            $host .= ':' . $port;
+        }
         if ($name) {
             $host .= '/' . $name;
         }
+        $connection = new Connection(new \MongoClient($host));
+        $connection->connect();
 
-        $this->dm = DocumentManager::create(new Connection($host), $config);
+        $this->dm = DocumentManager::create($connection, $config);
 
     }
 
