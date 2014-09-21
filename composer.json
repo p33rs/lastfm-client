@@ -1,0 +1,21 @@
+{
+    "name": "p33rs/lastfm-api",
+    "type": "project",
+    "description": "last.fm API Client",
+    "license": "CC-BY-SA-4.0",
+    "authors": [
+        {
+            "name": "Jon Pierce",
+            "email": "hello@jonpierce.net"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "config" : {
+        "component-dir": "vendor"
+    },
+    "autoload": {
+        "psr-4": { "p33rs\\LastFM\\Client": "src/" }
+    }
+}

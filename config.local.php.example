@@ -1,0 +1,10 @@
+<?php
+return [
+    'url' => 'http://ws.audioscrobbler.com/2.0/',
+    'key' => '00000000000000000000000000000000',
+    'storageUrl' => 'localhost',
+    'storageUser' => 'db_user',
+    'storagePass' => 'db_pass',
+    'storageName' => 'db_name',
+    'cachePersist' => 604800, // a week
+];
