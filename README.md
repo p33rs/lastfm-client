@@ -46,3 +46,4 @@ If a response ever comes back with an invalid session key error, clear the sessi
 
 ## Todo:
 - More storage adapters and a method of choosing which to use.
+- For some reason, the MongoClient connection doesn't seem to be working.
