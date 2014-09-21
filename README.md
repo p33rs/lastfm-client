@@ -44,7 +44,3 @@ if ($savedUser) {
 }
 ```
 If a response ever comes back with an invalid session key error, clear the session key from your database.
-
-## Todo:
-- More storage adapters and a method of choosing which to use.
-- The storage adapter isn't working reliably. It's a problem with the way I'm configuring it. Help!
