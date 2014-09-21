@@ -12,6 +12,8 @@ class Client
     private $cache;
     /** @var int rate limiting */
     private $lastCall = 0;
+    /** @var string auth token */
+    private $authToken = null;
 
     /** @var HS separator for hash keys */
     const HS = '##';
@@ -63,6 +65,26 @@ class Client
             $this->cache->save($hash, $object, $method, $args, $response);
         }
         return $parsed;
+    }
+
+    /**
+     * Set an authentication session.
+     * This is assuming you've gotten an auth token already.
+     * Getting such a token and managing its session lifetime
+     *   is left as an exercise for the user.
+     * @param string $token
+     * @return this
+     */
+    public function auth($token) {
+
+    }
+
+    /**
+     * @return this
+     */
+    public function unAuth() {
+        $this->authToken = null;
+        return this;
     }
 
     /**
@@ -126,6 +148,15 @@ class Client
         return md5(
             $object . self::HS . $method . self::HS . md5(json_encode($args))
         );
+    }
+
+    private function authParams() {
+        if (!$this->authToken) {
+            return [];
+        }
+        return [
+            'sk' => ''
+        ];
     }
 
 } // end class
