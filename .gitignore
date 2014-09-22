@@ -1,5 +1,3 @@
 .idea
 *.local.php
-old
-doctrine/cache/*
 vendor
