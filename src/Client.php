@@ -59,10 +59,7 @@ class Client
         $cached = $this->cache->retrieve($hash);
         $parsed = null;
         if ($cached) {
-            echo 'cached result';
             $parsed = simplexml_load_string($cached);
-        } else {
-            echo 'new result';
         }
         if (($cached && !$parsed) || !$cached) {
             $response = $this->request($object, $method, $args);
