@@ -6,6 +6,4 @@ return [
     'storageUser' => 'db_user',
     'storagePass' => 'db_pass',
     'storageName' => 'db_name',
-    'doctrineDb' => 'doctrine_odm',
-    'doctrineCache' => __DIR__ . '/doctrine/cache',
 ];
