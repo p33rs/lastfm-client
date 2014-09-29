@@ -50,13 +50,13 @@ class Client
      * @return \SimpleXMLElement
      * @throws Exception
      */
-    public function __invoke($object, $method, array $args = [])
+    public function __invoke($object, $method, array $args = [], $useCache = true)
     {
         ksort($args);
         $this->wait();
         // first, is there a cached answer?
         $hash = $this->buildHash($object, $method, $args);
-        $cached = $this->cache->retrieve($hash);
+        $cached = $useCache ? $this->cache->retrieve($hash) : null;
         $parsed = null;
         if ($cached) {
             $parsed = simplexml_load_string($cached);
